@@ -1,179 +1,540 @@
 # Paper Assistant Lab
 
-A lightweight **Scientific RAG + Evaluation Toolkit** for asking grounded questions over research papers.
+> **A Research Engineering Toolkit for Scientific Retrieval-Augmented Generation (RAG)**
 
-The goal is to build a small, transparent system that ingests scientific PDFs, retrieves relevant passages, answers questions using only retrieved evidence, and evaluates retrieval/answer quality.
+Paper Assistant Lab is an experimental framework for building and evaluating Retrieval-Augmented Generation (RAG) systems for scientific literature.
 
-## Motivation
+Unlike generic document chatbots, this project focuses on **grounded scientific question answering**, emphasizing transparent retrieval, citation-aware responses, reproducible evaluation, and modular experimentation.
 
-Scientific papers are dense. General-purpose LLMs often:
-- hallucinate details,
-- miss technical context,
-- ignore equations or methods,
-- answer without citations.
+The repository is designed both as a practical RAG implementation and as a research platform for studying retrieval strategies on scientific documents.
 
-This project explores how retrieval-augmented generation can be made more reliable for scientific literature.
+---
 
-## Core Idea
+# Motivation
+
+Large Language Models are increasingly used to summarize and answer questions about scientific papers. However, scientific documents present unique challenges:
+
+- dense technical language
+- mathematical notation
+- domain-specific terminology
+- long contextual dependencies
+- multiple sections containing similar concepts
+- high cost of factual mistakes
+
+Traditional LLM-based question answering often produces:
+
+- hallucinated claims
+- unsupported conclusions
+- incorrect citations
+- incomplete methodological explanations
+
+Paper Assistant Lab explores how retrieval-augmented generation can improve reliability by grounding every answer in retrieved evidence while providing measurable retrieval and generation quality.
+
+Rather than optimizing for chatbot interactions, the project emphasizes:
+
+- reproducibility
+- interpretability
+- modular experimentation
+- scientific evaluation
+
+---
+
+# Design Principles
+
+The repository follows five guiding principles.
+
+### Transparent Retrieval
+
+Every answer should be traceable back to the original paper.
+
+### Modular Architecture
+
+Each pipeline stage can be replaced independently for experimentation.
+
+### Reproducible Evaluation
+
+Experiments should produce repeatable retrieval metrics.
+
+### Scientific-First Processing
+
+Scientific papers are treated differently from generic PDFs by preserving metadata such as sections, page numbers, and references.
+
+### Research-Friendly
+
+The project should make it easy to compare embedding models, chunking methods, rerankers, and prompting strategies.
+
+---
+
+# Architecture
 
 ```text
-PDF Papers
-   ↓
-Text Extraction
-   ↓
-Chunking + Metadata
-   ↓
-Embeddings
-   ↓
-Vector Search
-   ↓
-Retrieved Evidence
-   ↓
-LLM Answer
-   ↓
-Citations + Evaluation
+                    PDF Papers
+                         │
+             Text + Metadata Extraction
+                         │
+        Section-aware Document Processing
+                         │
+               Chunking Strategies
+      (Fixed / Recursive / Semantic)
+                         │
+               Embedding Models
+        (MiniLM / BGE / E5 / etc.)
+                         │
+                  Vector Database
+                      (FAISS)
+                         │
+               Dense Retrieval
+                         │
+          (Future: Hybrid Retrieval)
+                         │
+              Evidence Selection
+                         │
+            Prompt + Retrieved Context
+                         │
+                 LLM Generation
+                         │
+        Citation-aware Scientific Answer
+                         │
+            Retrieval & QA Evaluation
 ```
 
-## Features
-### V1
+---
+
+# Features
+
+## Current (Version 1)
+
 - PDF text extraction
-- Page-level metadata
+- Metadata preservation
 - Fixed-size chunking
-- Embedding generation
-- FAISS-based vector retrieval
+- Sentence-transformer embeddings
+- FAISS vector search
 - Citation-aware question answering
+- CLI interface
 - Basic retrieval evaluation
 
-### Planned
-- Section-aware chunking
-- Comparison of embedding models
-- Retrieval metrics: Recall@k, MRR
-- Answer faithfulness evaluation
-- Scientific-domain benchmark questions
-- GraphRAG extension with Neo4j
+---
 
-## Project Structure
+## Planned
+
+### Document Processing
+
+- Section-aware chunking
+- Recursive chunking
+- Semantic chunking
+- Figure and table references
+- Equation-aware parsing
+
+### Retrieval
+
+- Multiple embedding backends
+- Hybrid retrieval (BM25 + Dense)
+- Cross-encoder reranking
+- Metadata filtering
+
+### Generation
+
+- Better prompting
+- Multi-document QA
+- Context compression
+- Self-verification
+- Evidence ranking
+
+### Evaluation
+
+- Recall@k
+- Precision@k
+- Mean Reciprocal Rank (MRR)
+- nDCG
+- Citation accuracy
+- Faithfulness
+- Hallucination detection
+- Groundedness scoring
+
+### Scientific Extensions
+
+- GraphRAG
+- Neo4j knowledge graph
+- Entity extraction
+- Citation graph analysis
+- Multi-hop scientific reasoning
+
+---
+
+# Repository Structure
+
 ```text
 paper-assistant-lab/
+
+├── configs/
+│   ├── embedding.yaml
+│   ├── retrieval.yaml
+│   └── generation.yaml
+│
 ├── data/
 │   ├── papers/
-│   └── processed/
-├── examples/
-│   └── sample_questions.json
+│   ├── processed/
+│   ├── chunks/
+│   └── embeddings/
+│
 ├── notebooks/
 │   ├── 01_ingestion_demo.ipynb
-│   └── 02_retrieval_eval.ipynb
+│   ├── 02_chunking_experiments.ipynb
+│   ├── 03_embedding_comparison.ipynb
+│   ├── 04_retrieval_evaluation.ipynb
+│   └── 05_generation_evaluation.ipynb
+│
 ├── src/
-│   ├── ingest.py
-│   ├── chunk.py
-│   ├── embed.py
-│   ├── retrieve.py
-│   ├── answer.py
-│   └── evaluate.py
+│   ├── ingestion/
+│   │   ├── ingest.py
+│   │   ├── parser.py
+│   │   └── metadata.py
+│   │
+│   ├── chunking/
+│   │   ├── fixed.py
+│   │   ├── recursive.py
+│   │   └── semantic.py
+│   │
+│   ├── embeddings/
+│   │   ├── embed.py
+│   │   └── models.py
+│   │
+│   ├── retrieval/
+│   │   ├── faiss.py
+│   │   ├── search.py
+│   │   └── rerank.py
+│   │
+│   ├── generation/
+│   │   ├── answer.py
+│   │   └── prompts.py
+│   │
+│   ├── evaluation/
+│   │   ├── retrieval.py
+│   │   ├── generation.py
+│   │   └── benchmark.py
+│   │
+│   └── utils/
+│
+├── examples/
+│   ├── sample_questions.json
+│   └── benchmark_dataset.json
+│
 ├── requirements.txt
-└── README.md
+├── README.md
+└── LICENSE
 ```
 
-## Initial Scope
+---
 
-This is intentionally a small project.
+# Installation
 
-The first milestone is not a production system. It is a working, inspectable prototype that can answer questions over a small set of scientific papers with explicit evidence.
-
-### Example Questions
-- What problem does the paper solve?
-- What dataset or simulation setup is used?
-- Which model architecture is proposed?
-- How is the method evaluated?
-- What are the main limitations?
-- Which equations or assumptions are central to the method?
-
-## Setup
 ```bash
 git clone https://github.com/nachiket273/paper-assistant-lab.git
+
 cd paper-assistant-lab
 
 python -m venv venv
-source venv/bin/activate   # Linux/Mac
-# venv\Scripts\activate    # Windows
+
+source venv/bin/activate
 
 pip install -r requirements.txt
 ```
 
-## Usage
-1. Add papers
-Place PDF files in:
-```bash
+---
+
+# Quick Start
+
+## Step 1
+
+Add PDF files
+
+```
 data/papers/
 ```
 
-2. Extract text
+---
+
+## Step 2
+
+Extract text
+
 ```bash
-python src/ingest.py
+python src/ingestion/ingest.py
 ```
 
-3. Create chunks
+---
+
+## Step 3
+
+Generate chunks
+
 ```bash
-python src/chunk.py
+python src/chunking/fixed.py
 ```
 
-4. Build embeddings
+---
+
+## Step 4
+
+Generate embeddings
+
 ```bash
-python src/embed.py
+python src/embeddings/embed.py
 ```
 
-5. Ask a question
+---
+
+## Step 5
+
+Build FAISS index
+
 ```bash
-python src/retrieve.py --query "What is the main contribution of the paper?"
+python src/retrieval/faiss.py
 ```
 
-## Evaluation Plan
+---
 
-The project will evaluate both retrieval and generation quality.
+## Step 6
 
-### Retrieval
-- Top-k retrieved chunks
+Ask questions
+
+```bash
+python main.py \
+--query "What problem does the paper solve?"
+```
+
+Example output
+
+```text
+Question
+
+What problem does the paper solve?
+
+----------------------------------
+
+Retrieved Evidence
+
+[Page 3]
+
+"The proposed method addresses..."
+
+[Page 5]
+
+"Our primary contribution..."
+
+----------------------------------
+
+Answer
+
+The paper proposes...
+
+----------------------------------
+
+Sources
+
+Page 3
+
+Page 5
+```
+
+---
+
+# Example Questions
+
+General
+
+- What problem does the paper solve?
+- What are the main contributions?
+- What assumptions are made?
+- What are the limitations?
+
+Methods
+
+- Which architecture is proposed?
+- How are embeddings generated?
+- Which optimization method is used?
+- Which hyperparameters are important?
+
+Experiments
+
+- Which datasets are used?
+- How is the model evaluated?
+- Which baselines are compared?
+- What metrics are reported?
+
+Scientific
+
+- Which equations define the method?
+- What approximations are introduced?
+- Which physical assumptions are made?
+- Which theoretical model is used?
+
+---
+
+# Supported Embedding Models
+
+Initial support
+
+- all-MiniLM-L6-v2
+- BAAI/bge-small-en
+- BAAI/bge-base-en
+- intfloat/e5-base
+
+Future
+
+- Instructor XL
+- NV-Embed
+- GTE
+- Jina Embeddings
+
+---
+
+# Evaluation
+
+A central goal of this project is measuring retrieval quality rather than relying solely on subjective answer quality.
+
+## Retrieval Metrics
+
 - Recall@k
-- Mean Reciprocal Rank
-- Chunking strategy comparison
+- Precision@k
+- MRR
+- nDCG
+- Hit Rate
+- Retrieval latency
 
-### Generation
-- Groundedness
+---
+
+## Generation Metrics
+
+- Faithfulness
 - Citation correctness
+- Groundedness
+- Hallucination rate
 - Answer relevance
-- Insufficient-context detection
+- Context utilization
 
-## Roadmap
-### Milestone 1: Basic RAG Pipeline
+---
+
+# Research Questions
+
+The repository is intended to support experiments such as
+
+### RQ1
+
+Does section-aware chunking improve retrieval?
+
+### RQ2
+
+How sensitive is retrieval to chunk size?
+
+### RQ3
+
+Which embedding model performs best for scientific papers?
+
+### RQ4
+
+Does reranking improve citation quality?
+
+### RQ5
+
+Can LLMs reliably detect insufficient evidence?
+
+### RQ6
+
+How does GraphRAG compare with dense retrieval?
+
+---
+
+# Roadmap
+
+## Milestone 1
+
+Basic Scientific RAG
+
 - [ ] PDF ingestion
-- [ ] Text chunking
-- [ ] Embedding generation
+- [ ] Chunking
+- [ ] Embeddings
 - [ ] FAISS retrieval
-- [ ] CLI query interface
-### Milestone 2: Evaluation
-- [ ] Add sample questions
-- [ ] Add ground-truth evidence
-- [ ] Implement retrieval metrics
-- [ ] Compare chunking strategies
-### Milestone 3: Scientific Extensions
-- [ ] Section-aware parsing
-- [ ] Equation/context handling
-- [ ] Citation-aware answer generation
-- [ ] Domain-specific paper collections
-### Milestone 4: GraphRAG Extension
-- [ ] Extract entities and relationships
-- [ ] Store graph in Neo4j
-- [ ] Combine graph traversal with vector retrieval
-- [ ] Evaluate multi-hop scientific questions
+- [ ] Citation-aware QA
 
+---
 
-## Why This Project?
+## Milestone 2
 
-This project is designed to demonstrate practical skills in:
+Evaluation Framework
 
-- applied LLM systems,
-- RAG pipelines,
-- scientific document processing,
-- ML evaluation,
-- Python engineering,
-- research-oriented AI tooling.
+- [ ] Benchmark dataset
+- [ ] Ground-truth evidence
+- [ ] Retrieval metrics
+- [ ] Answer evaluation
+- [ ] Experiment logging
+
+---
+
+## Milestone 3
+
+Advanced Retrieval
+
+- [ ] Semantic chunking
+- [ ] Hybrid retrieval
+- [ ] Cross-encoder reranking
+- [ ] Metadata filtering
+
+---
+
+## Milestone 4
+
+Scientific Extensions
+
+- [ ] Equation-aware parsing
+- [ ] Figure references
+- [ ] Citation graph
+- [ ] Multi-document QA
+
+---
+
+## Milestone 5
+
+GraphRAG
+
+- [ ] Entity extraction
+- [ ] Neo4j integration
+- [ ] Multi-hop retrieval
+- [ ] Knowledge graph evaluation
+
+---
+
+# Future Directions
+
+Possible research directions include
+
+- Scientific document parsing
+- Domain-specific embedding models
+- Retrieval benchmarks
+- Citation graph reasoning
+- GraphRAG
+- Agentic literature review
+- Scientific knowledge discovery
+
+---
+
+# Why This Project?
+
+Paper Assistant Lab is intended to demonstrate practical skills in
+
+- Retrieval-Augmented Generation
+- Information Retrieval
+- Scientific NLP
+- Large Language Models
+- Python software engineering
+- Experiment design
+- Retrieval evaluation
+- AI research tooling
+
+The long-term vision is to evolve this repository into a reproducible research platform for experimenting with scientific retrieval systems rather than a simple "chat with PDFs" application.
+
+---
+
+# License
+
+Apache License
