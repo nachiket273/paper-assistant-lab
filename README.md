@@ -453,7 +453,7 @@ How does GraphRAG compare with dense retrieval?
 
 Basic Scientific RAG
 
-- [ ] PDF ingestion
+- [X] PDF ingestion
 - [ ] Chunking
 - [ ] Embeddings
 - [ ] FAISS retrieval
