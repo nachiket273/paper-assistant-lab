@@ -1,3 +1,5 @@
+![CI](https://github.com/nachiket273/paper-assistant-lab/actions/workflows/ci.yml/badge.svg)
+
 # Paper Assistant Lab
 
 > **A Research Engineering Toolkit for Scientific Retrieval-Augmented Generation (RAG)**
