@@ -4,6 +4,7 @@ Unit tests for parser.py
 
 import os
 from pathlib import Path
+from pydantic import ValidationError
 import pytest
 import sys
 
@@ -15,7 +16,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from src.ingestion.parser import parse_pdf
-from src.models.paper import Paper
+from src.models.paper import Paper, Page
 
 
 FIXURE_DIR = Path(__file__).parent / "fixtures"
@@ -87,3 +88,9 @@ def test_metadata_fields_are_strings_or_none():
         paper.metadata.modification_date
     ]
     assert all(isinstance(field, (str, type(None))) for field in metadata_fields)
+
+
+def test_page_requires_integer_page_number():
+    with pytest.raises(ValidationError):
+        Page(page_number="not_an_integer",
+             text="Sample text")
