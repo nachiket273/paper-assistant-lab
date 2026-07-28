@@ -2,24 +2,15 @@
 Unit tests for parser.py
 """
 
-import os
 from pathlib import Path
-from pydantic import ValidationError
+
 import pytest
-import sys
-
-# Finds the absolute path of the directory 2 levels up from this file
-script_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.abspath(os.path.join(script_dir, "..", ".."))
-
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+from pydantic import ValidationError
 
 from src.ingestion.parser import parse_pdf
-from src.models.paper import Paper, Page
+from src.models.paper import Page, Paper
 
-
-FIXURE_DIR = Path(__file__).parent / "fixtures"
+FIXURE_DIR = Path(__file__).parent.parent / "fixtures"
 SAMPLE_PDF_PATH = FIXURE_DIR / "sample.pdf"
 
 
@@ -85,12 +76,11 @@ def test_metadata_fields_are_strings_or_none():
         paper.metadata.creator,
         paper.metadata.producer,
         paper.metadata.creation_date,
-        paper.metadata.modification_date
+        paper.metadata.modification_date,
     ]
     assert all(isinstance(field, (str, type(None))) for field in metadata_fields)
 
 
 def test_page_requires_integer_page_number():
     with pytest.raises(ValidationError):
-        Page(page_number="not_an_integer",
-             text="Sample text")
+        Page(page_number="not_an_integer", text="Sample text")

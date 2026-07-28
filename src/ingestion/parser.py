@@ -10,26 +10,17 @@ No cleaning, chunking, or preprocessing is performed here.
 
 NOTE:- Currently limited to extracting text only, images and tables are not supported.
 """
-import fitz  # PyMuPDF
+
 import os
 from pathlib import Path
-import sys
-from typing import Any, Dict, List, Union
+from typing import List, Union
 
-# Finds the absolute path of the directory 2 levels up from this file
-script_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.abspath(os.path.join(script_dir, "..", ".."))
+import fitz  # PyMuPDF
 
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+import src.models.paper
 
-from src.models.paper import (
-    Page,
-    PaperMetadata,
-    Paper
-)
 
-def parse_pdf(file_path: Union[str, os.PathLike[str]]) -> Paper:
+def parse_pdf(file_path: Union[str, os.PathLike[str]]) -> src.models.paper.Paper:
     """
     Extract metadata and page-level text from a PDF.
 
@@ -50,24 +41,21 @@ def parse_pdf(file_path: Union[str, os.PathLike[str]]) -> Paper:
     # Extract metadata
     metadata = doc.metadata
 
-    pages : List[Page] = []
+    pages: List[src.models.paper.Page] = []
 
     # Extract page-level text
     for page_idx in range(doc.page_count):
         page = doc.load_page(page_idx)
 
         pages.append(
-            Page(
-                page_number=page_idx + 1,
-                text=page.get_text("text")
-            )
+            src.models.paper.Page(page_number=page_idx + 1, text=page.get_text("text"))
         )
 
-    result = Paper(
+    result = src.models.paper.Paper(
         filename=fpath.name,
         filepath=str(fpath.resolve()),
         num_pages=doc.page_count,
-        metadata=PaperMetadata(
+        metadata=src.models.paper.PaperMetadata(
             title=metadata.get("title"),
             author=metadata.get("author"),
             subject=metadata.get("subject"),
@@ -77,7 +65,7 @@ def parse_pdf(file_path: Union[str, os.PathLike[str]]) -> Paper:
             creation_date=metadata.get("creationDate"),
             modification_date=metadata.get("modDate"),
         ),
-        pages=pages
+        pages=pages,
     )
 
     doc.close()
